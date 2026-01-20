@@ -69,6 +69,11 @@ namespace WindyFramework.Core
                     MelonLogger.Msg($"[WindyFW] Skipping {type.Name} (Disabled in Config)");
                     continue;
                 }
+                if (type.Name.Contains("NPCGenerator") && !WindyConfig.EnableNPCGenerator.Value)
+                {
+                    MelonLogger.Msg($"[WindyFW] Skipping {type.Name} (Disabled in Config)");
+                    continue;
+                }
 
                 try
                 {
