@@ -17,7 +17,7 @@ namespace WindyFramework.Core
         private static WindyManager _instance;
         public static WindyManager Instance => _instance ?? (_instance = new WindyManager());
 
-        public const string VERSION_WINDYFW = "1.2.3";
+        public const string VERSION_WINDYFW = "2.0.0";
         public bool IsEnabled = true;
         public bool ShowUI = false;
         public bool StrangerSimulation = false; 
