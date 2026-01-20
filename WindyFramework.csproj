@@ -80,4 +80,8 @@
       <HintPath>$(ManagedPath)\FishNet.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="REFERENCES\**" />
+  </ItemGroup>
 </Project>
