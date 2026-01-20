@@ -24,6 +24,7 @@ namespace WindyFramework.Core
 
         public List<LobbyData> FoundLobbies = new List<LobbyData>();
         private float _lastDiscoveryTime = 0f;
+        private float _lastMetadataUpdateTime = 0f;
         private Rect _windowRect = new Rect(Screen.width - 420, 50, 450, 550);
         private Rect _hostWindowRect = new Rect(50, 50, 300, 400);
 
@@ -57,6 +58,13 @@ namespace WindyFramework.Core
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Menu")
             {
                 if (Time.time - _lastDiscoveryTime > 10f) RefreshLobbyList();
+            }
+
+            // Periodic Host Metadata Update (Every 5 seconds)
+            if (Lobby.Instance != null && Lobby.Instance.IsHost && Time.time - _lastMetadataUpdateTime > 5f)
+            {
+                ForceMetadataUpdate();
+                _lastMetadataUpdateTime = Time.time;
             }
         }
 
