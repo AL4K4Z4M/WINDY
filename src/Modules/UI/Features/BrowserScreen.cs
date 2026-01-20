@@ -106,7 +106,18 @@ namespace WindyFramework.Modules.UI.Features
                 // Version -> Version
                 SetText(container, "Info/Version", $"v{lobby.Version}");
 
-                // 3. Setup Button
+                // 3. Hide Unwanted Buttons (Import/Export/Delete)
+                Transform[] allChildren = container.GetComponentsInChildren<Transform>(true);
+                foreach (Transform child in allChildren)
+                {
+                    string name = child.name.ToLower();
+                    if (name.Contains("import") || name.Contains("export") || name.Contains("delete"))
+                    {
+                        child.gameObject.SetActive(false);
+                    }
+                }
+
+                // 4. Setup Button
                 Button btn = container.Find("Button")?.GetComponent<Button>();
                 if (btn != null)
                 {
