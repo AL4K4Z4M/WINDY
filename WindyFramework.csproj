@@ -14,6 +14,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="GameSource\**" />
+    <Compile Remove="tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- MelonLoader References -->
     <Reference Include="MelonLoader">
       <HintPath>$(MelonPath)\MelonLoader.dll</HintPath>
@@ -79,9 +84,5 @@
     <Reference Include="FishNet.Runtime">
       <HintPath>$(ManagedPath)\FishNet.Runtime.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="REFERENCES\**" />
   </ItemGroup>
 </Project>
