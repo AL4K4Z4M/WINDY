@@ -81,7 +81,6 @@ namespace Zordon.ScheduleI.WorldEditor.Features
         private int _selectedCategoryIndex = 0;
         private Vector2 _paletteScroll = Vector2.zero;
         private bool _showGizmos = true;
-        private string _newTemplateName = "";
 
         // Clipboard
         private string _clipboardSourceID;

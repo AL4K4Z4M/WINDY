@@ -18,10 +18,12 @@ namespace Zordon.ScheduleI.Survival.Features
         public bool IsOpen { get; private set; } = false; // Disable Force Open
         private Rect _windowRect = new Rect(20, 20, 400, 600);
         public bool GodModeEnabled { get; private set; } = false;
+        public static bool FreezeNPCVision = false;
         
         private int _currentTab = 0;
-        private string[] _tabs = { "State", "Wave", "Entities", "Cheats", "Debug" };
+        private string[] _tabs = { "State", "Wave", "Entities", "Cheats", "Drug Lab", "Debug" };
         private string _waveInput = "1";
+        private Vector2 _drugScroll = Vector2.zero;
         
         private float _logTimer = 0f;
 
@@ -90,7 +92,8 @@ namespace Zordon.ScheduleI.Survival.Features
                 case 1: DrawWaveControl(); break;
                 case 2: DrawEntityControl(); break;
                 case 3: DrawCheats(); break;
-                case 4: DrawDiagnostics(); break;
+                case 4: DrawDrugLab(); break;
+                case 5: DrawDiagnostics(); break;
             }
 
             GUILayout.EndVertical();
@@ -139,7 +142,7 @@ namespace Zordon.ScheduleI.Survival.Features
 
             if (GUILayout.Button("SKIP WAVE (KILL ALL)"))
             {
-                KillAllEnemies();
+                SurvivalController.Instance.ForceSkipWave();
             }
 
             GUILayout.BeginHorizontal();
@@ -172,9 +175,9 @@ namespace Zordon.ScheduleI.Survival.Features
             GUILayout.Space(10);
             GUILayout.Label("<b>CLEANUP</b>", GetLabelStyle(Color.red));
 
-            if (GUILayout.Button("KILL ALL ENEMIES"))
+            if (GUILayout.Button("KILL ALL (SKIP WAVE)"))
             {
-                KillAllEnemies();
+                SurvivalController.Instance.ForceSkipWave();
             }
         }
 
@@ -186,6 +189,11 @@ namespace Zordon.ScheduleI.Survival.Features
             if (GUILayout.Button(GodModeEnabled ? "GOD MODE: <color=green>ON</color>" : "GOD MODE: <color=red>OFF</color>"))
             {
                 GodModeEnabled = !GodModeEnabled;
+            }
+
+            if (GUILayout.Button(FreezeNPCVision ? "FREEZE NPC VISION: <color=green>ON</color>" : "FREEZE NPC VISION: <color=red>OFF</color>"))
+            {
+                FreezeNPCVision = !FreezeNPCVision;
             }
 
             if (GUILayout.Button("ADD $10,000"))
@@ -205,17 +213,74 @@ namespace Zordon.ScheduleI.Survival.Features
             }
         }
 
-        // 5. DIAGNOSTICS
-        private void DrawDiagnostics()
+        // 5. DRUG LAB
+        private void DrawDrugLab()
         {
-            GUILayout.Label("<b>THE DOCTOR</b>", GetLabelStyle(Color.yellow));
+            GUILayout.Label("<b>THE DRUG LAB</b>", GetLabelStyle(Color.magenta));
+            GUILayout.Label("Experiment with all available game effects.");
+            GUILayout.Space(5);
 
-            if (GUILayout.Button("LOG SPAWN POINT"))
+            if (GUILayout.Button("GIVE RANDOM DRUG EFFECT"))
             {
-                LocationLogger.Instance.LogCurrentLocation();
+                DrugDebugModule.Instance.GiveRandomEffect();
             }
 
-            if (GUILayout.Button("TOGGLE SPAWN MARKERS"))
+            if (GUILayout.Button("CLEAR ACTIVE EFFECT"))
+            {
+                DrugDebugModule.Instance.ClearActiveEffect();
+            }
+
+            GUILayout.Space(10);
+            GUILayout.Label("<b>MANUAL SELECTION</b>", GetLabelStyle(Color.cyan));
+            
+            _drugScroll = GUILayout.BeginScrollView(_drugScroll, GUILayout.Height(350));
+            var allEffects = DrugDebugModule.Instance.GetAllEffects();
+            foreach (var effect in allEffects)
+            {
+                if (GUILayout.Button(effect.Name))
+                {
+                    DrugDebugModule.Instance.ApplyEffect(effect);
+                }
+            }
+            GUILayout.EndScrollView();
+        }
+
+        // 6. DIAGNOSTICS (RENAMED TO SPAWN MANAGER)
+        private void DrawDiagnostics()
+        {
+            GUILayout.Label("<b>VISUALS</b>", GetLabelStyle(Color.cyan));
+
+            if (GUILayout.Button(DebugLabel.ShowLabels ? "NAMES: <color=green>VISIBLE</color>" : "NAMES: <color=red>HIDDEN</color>"))
+            {
+                DebugLabel.ShowLabels = !DebugLabel.ShowLabels;
+            }
+
+            if (GUILayout.Button(DebugLabel.ShowBeams ? "BEAMS: <color=green>VISIBLE</color>" : "BEAMS: <color=red>HIDDEN</color>"))
+            {
+                DebugLabel.ShowBeams = !DebugLabel.ShowBeams;
+            }
+
+            GUILayout.Space(10);
+            GUILayout.Label("<b>SPAWN MANAGER</b>", GetLabelStyle(Color.yellow));
+
+            if (GUILayout.Button("ADD PLAYER START POINT (BLUE)"))
+            {
+                LocationLogger.Instance.LogLocation("Survival_PlayerSpawnPoints.txt", Color.cyan);
+            }
+
+            if (GUILayout.Button("ADD ENEMY SPAWN (RED)"))
+            {
+                LocationLogger.Instance.LogLocation("Survival_EnemySpawnPoints.txt", Color.red);
+            }
+
+            if (GUILayout.Button("ADD VAN SPAWN (GREEN)"))
+            {
+                LocationLogger.Instance.LogLocation("Survival_SpawnPoints.txt", Color.green);
+            }
+
+            GUILayout.Space(10);
+
+            if (GUILayout.Button("TOGGLE ALL MARKERS"))
             {
                 LocationLogger.Instance.ToggleMarkers();
             }

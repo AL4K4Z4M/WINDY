@@ -100,24 +100,13 @@ namespace WindyFramework.Modules.UI.Features
                 SetText(container, "Info/Created/Text", $"Host: {lobby.HostName}");
 
                 // LastPlayed -> Game Mode
-                string mode = !string.IsNullOrEmpty(lobby.GameMode) ? lobby.GameMode : "Freemode";
+                string mode = !string.IsNullOrEmpty(lobby.GameMode) ? lobby.GameMode : "Career";
                 SetText(container, "Info/LastPlayed/Text", mode);
 
                 // Version -> Version
                 SetText(container, "Info/Version", $"v{lobby.Version}");
 
-                // 3. Hide Unwanted Buttons (Import/Export/Delete)
-                Transform[] allChildren = container.GetComponentsInChildren<Transform>(true);
-                foreach (Transform child in allChildren)
-                {
-                    string name = child.name.ToLower();
-                    if (name.Contains("import") || name.Contains("export") || name.Contains("delete"))
-                    {
-                        child.gameObject.SetActive(false);
-                    }
-                }
-
-                // 4. Setup Button
+                // 3. Setup Button
                 Button btn = container.Find("Button")?.GetComponent<Button>();
                 if (btn != null)
                 {

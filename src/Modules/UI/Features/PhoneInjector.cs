@@ -47,6 +47,13 @@ namespace WindyFramework.Modules.UI.Features
                 GameObject iconsContainer = GameObject.Find(_homeIconsPath);
                 if (iconsContainer == null) return;
 
+                // CHECK: Deduplication
+                if (iconsContainer.transform.Find("AppIcon_HostManager") != null)
+                {
+                    MelonLogger.Msg("[PhoneInjector] Host Manager App already injected. Skipping.");
+                    return;
+                }
+
                 // Clone the last icon
                 if (iconsContainer.transform.childCount == 0) return;
                 GameObject templateIcon = iconsContainer.transform.GetChild(iconsContainer.transform.childCount - 1).gameObject;
@@ -67,11 +74,17 @@ namespace WindyFramework.Modules.UI.Features
                     return;
                 }
 
-                foreach(var c in templateApp.GetComponents<Component>())
-                    MelonLogger.Msg($"[PhoneInjector] Template Component: {c.GetType().Name}");
+                // Prevent Awake/OnEnable from running during instantiation
+                bool wasActive = templateApp.gameObject.activeSelf;
+                templateApp.gameObject.SetActive(false);
 
                 _appPanel = Object.Instantiate(templateApp.gameObject, appsCanvas.transform);
+                
+                // Restore template state
+                templateApp.gameObject.SetActive(wasActive);
+
                 _appPanel.name = "HostManagerApp_Panel";
+                // Ensure it stays inactive
                 _appPanel.SetActive(false);
 
                 // Strip Native Logic to prevent interference
@@ -80,6 +93,11 @@ namespace WindyFramework.Modules.UI.Features
                     if (!(comp is RectTransform) && !(comp is CanvasRenderer) && !(comp is Image) && !(comp is CanvasGroup)) {
                         Object.Destroy(comp);
                     }
+                }
+
+                // Destroy all children (UI elements of the copied app)
+                foreach (Transform child in _appPanel.transform) {
+                    Object.Destroy(child.gameObject);
                 }
 
                 // Force Visibility Properties
@@ -96,7 +114,7 @@ namespace WindyFramework.Modules.UI.Features
                 if (rect != null && templateRect != null)
                 {
                     rect.localScale = templateRect.localScale;
-                    rect.localRotation = templateRect.localRotation;
+                    rect.localRotation = Quaternion.identity; // Force identity to prevent rotation glitches
                     rect.localPosition = templateRect.localPosition;
                     rect.anchorMin = templateRect.anchorMin;
                     rect.anchorMax = templateRect.anchorMax;

@@ -11,13 +11,7 @@ namespace Zordon.ScheduleI.Survival.Features
         private static LocationLogger _instance;
         public static LocationLogger Instance => _instance ?? (_instance = new LocationLogger());
 
-        private string _logPath;
         private System.Collections.Generic.List<GameObject> _activeMarkers = new System.Collections.Generic.List<GameObject>();
-
-        public LocationLogger()
-        {
-            _logPath = Path.Combine(MelonLoader.Utils.MelonEnvironment.UserDataDirectory, "Survival_SpawnPoints.txt");
-        }
 
         public void ToggleMarkers()
         {
@@ -28,17 +22,19 @@ namespace Zordon.ScheduleI.Survival.Features
             }
             else
             {
-                InitializeMarkers();
+                InitializeMarkers("Survival_SpawnPoints.txt", Color.green);
+                InitializeMarkers("Survival_EnemySpawnPoints.txt", Color.red);
+                InitializeMarkers("Survival_PlayerSpawnPoints.txt", Color.cyan);
                 MelonLogger.Msg("[LocationLogger] Markers Shown.");
             }
         }
 
-        private void InitializeMarkers()
+        private void InitializeMarkers(string fileName, Color color)
         {
-            ClearMarkers();
-            if (!File.Exists(_logPath)) return;
+            string path = Path.Combine(SurvivalController.Instance.DataPath, fileName);
+            if (!File.Exists(path)) return;
 
-            string[] lines = File.ReadAllLines(_logPath);
+            string[] lines = File.ReadAllLines(path);
             foreach (string line in lines)
             {
                 string[] parts = line.Split('|');
@@ -47,12 +43,12 @@ namespace Zordon.ScheduleI.Survival.Features
                 if (posParts.Length == 3)
                 {
                     Vector3 pos = new Vector3(float.Parse(posParts[0]), float.Parse(posParts[1]), float.Parse(posParts[2]));
-                    CreateMarker(pos);
+                    CreateMarker(pos, color);
                 }
             }
         }
 
-        private void CreateMarker(Vector3 position)
+        private void CreateMarker(Vector3 position, Color color)
         {
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             marker.name = "Survival_SpawnMarker";
@@ -65,7 +61,7 @@ namespace Zordon.ScheduleI.Survival.Features
             var renderer = marker.GetComponent<Renderer>();
             // Use Unlit/Color to ensure it glows and ignores world lighting/shadows
             renderer.material.shader = Shader.Find("Unlit/Color");
-            renderer.material.color = new Color(1f, 0f, 0f, 0.8f); 
+            renderer.material.color = color;
 
             _activeMarkers.Add(marker);
         }
@@ -76,7 +72,7 @@ namespace Zordon.ScheduleI.Survival.Features
             _activeMarkers.Clear();
         }
 
-        public void LogCurrentLocation()
+        public void LogLocation(string fileName, Color color)
         {
             if (Player.Local == null)
             {
@@ -88,17 +84,24 @@ namespace Zordon.ScheduleI.Survival.Features
             Vector3 rot = Player.Local.transform.eulerAngles;
 
             string logEntry = $"SpawnPoint_{System.DateTime.Now:HHmmss} | {pos.x:F3}, {pos.y:F3}, {pos.z:F3} | {rot.x:F3}, {rot.y:F3}, {rot.z:F3}";
+            string fullPath = Path.Combine(SurvivalController.Instance.DataPath, fileName);
 
             try
             {
-                File.AppendAllLines(_logPath, new[] { logEntry });
-                MelonLogger.Msg($"[LocationLogger] Saved coordinates to: {_logPath}");
-                CreateMarker(pos); // Add marker immediately
+                File.AppendAllLines(fullPath, new[] { logEntry });
+                MelonLogger.Msg($"[LocationLogger] Saved coordinates to: {fullPath}");
+                CreateMarker(pos, color); // Add marker immediately
             }
             catch (System.Exception ex)
             {
                 MelonLogger.Error($"Failed to write to spawn point log: {ex}");
             }
+        }
+        
+        // Backward compatibility for DebugMenu
+        public void LogCurrentLocation()
+        {
+            LogLocation("Survival_SpawnPoints.txt", Color.green);
         }
     }
 }

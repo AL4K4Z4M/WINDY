@@ -17,14 +17,13 @@ namespace WindyFramework.Core
         private static WindyManager _instance;
         public static WindyManager Instance => _instance ?? (_instance = new WindyManager());
 
-        public const string VERSION_WINDYFW = "2.0.0";
+        public const string VERSION_WINDYFW = "1.2.3";
         public bool IsEnabled = true;
         public bool ShowUI = false;
         public bool StrangerSimulation = false; 
 
         public List<LobbyData> FoundLobbies = new List<LobbyData>();
         private float _lastDiscoveryTime = 0f;
-        private float _lastMetadataUpdateTime = 0f;
         private Rect _windowRect = new Rect(Screen.width - 420, 50, 450, 550);
         private Rect _hostWindowRect = new Rect(50, 50, 300, 400);
 
@@ -58,13 +57,6 @@ namespace WindyFramework.Core
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Menu")
             {
                 if (Time.time - _lastDiscoveryTime > 10f) RefreshLobbyList();
-            }
-
-            // Periodic Host Metadata Update (Every 5 seconds)
-            if (Lobby.Instance != null && Lobby.Instance.IsHost && Time.time - _lastMetadataUpdateTime > 5f)
-            {
-                ForceMetadataUpdate();
-                _lastMetadataUpdateTime = Time.time;
             }
         }
 
@@ -121,9 +113,14 @@ namespace WindyFramework.Core
                     SteamMatchmaking.SetLobbyData(lobbyId, "WINDY_NETWORTH", MoneyManager.FormatAmount(net));
                 }
 
-                SteamMatchmaking.SetLobbyData(lobbyId, "WINDY_MODE", "Freemode");
+                string mode = "Career";
+                if (Zordon.ScheduleI.Survival.Features.SurvivalController.Instance != null && Zordon.ScheduleI.Survival.Features.SurvivalController.Instance.SurvivalEnabled)
+                {
+                    mode = "Survival";
+                }
+                SteamMatchmaking.SetLobbyData(lobbyId, "WINDY_MODE", mode);
 
-                MelonLogger.Msg($"[WindyFW] Shouting v{VERSION_WINDYFW} to the world.");
+                MelonLogger.Msg($"[WindyFW] Shouting v{VERSION_WINDYFW} to the world (Mode: {mode}).");
             }
         }
 
